@@ -66,14 +66,15 @@ export async function generateQA(): Promise<any> {
         const messages: ChatCompletionRequestMessage[] = [
           {
             role: 'system',
-            content: `我会给你发送一段长文本，${
-              data.prompt ? `是${data.prompt}，` : ''
-            }请学习它，并用 markdown 格式给出 25 个问题和答案，问题可以多样化、自由扩展；答案要详细、解读到位，答案包含普通文本、链接、代码、表格、公示、媒体链接等。按下面 QA 问答格式返回: 
-Q1:
-A1:
-Q2:
-A2:
-……`
+            content: `${data.prompt}\n最后，请按下面 QA 问答格式返回: Q1:/nA1:\nQ2: /nA2:....\n`,
+//             content: `我会给你发送一段长文本，${
+//               data.prompt ? `是${data.prompt}，` : ''
+//             }请学习它，并用 markdown 格式给出 25 个问题和答案，问题可以多样化、自由扩展；答案要详细、解读到位，答案包含普通文本、链接、代码、表格、公示、媒体链接等。按下面 QA 问答格式返回: 
+// Q1:
+// A1:
+// Q2:
+// A2:
+// ……`
           },
           {
             role: 'user',

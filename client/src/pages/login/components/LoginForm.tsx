@@ -20,6 +20,11 @@ interface LoginFormType {
   password: string;
 }
 
+const defaultValues: LoginFormType = {
+    username: "root",
+    password: "123456"
+}
+
 const LoginForm = ({ setPageType, loginSuccess }: Props) => {
   const router = useRouter();
   const { lastRoute = '/app/list' } = router.query as { lastRoute: string };
@@ -84,6 +89,7 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
             {...register('username', {
               required: '邮箱/手机号/用户名不能为空'
             })}
+            defaultValue={defaultValues.username}
           ></Input>
           <FormErrorMessage position={'absolute'} fontSize="xs">
             {!!errors.username && errors.username.message}
@@ -101,6 +107,7 @@ const LoginForm = ({ setPageType, loginSuccess }: Props) => {
                 message: '密码最多 20 位'
               }
             })}
+            defaultValue={defaultValues.password}
           ></Input>
           <FormErrorMessage position={'absolute'} fontSize="xs">
             {!!errors.password && errors.password.message}

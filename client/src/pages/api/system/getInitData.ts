@@ -42,7 +42,7 @@ const defaultFeConfigs: FeConfigsType = {
   show_contact: true,
   show_git: true,
   show_doc: true,
-  systemTitle: 'FastGPT',
+  systemTitle: '',
   authorText: 'Made by FastGPT Team.',
   exportLimitMinutes: 0,
   scripts: []

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Box, Flex, Button, useTheme, Image, Input } from '@chakra-ui/react';
+import { Box, Flex, Button, useTheme, Image, Input, Textarea } from '@chakra-ui/react';
 import { useToast } from '@/hooks/useToast';
 import { useConfirm } from '@/hooks/useConfirm';
 import { useMutation } from '@tanstack/react-query';
@@ -14,12 +14,17 @@ import DeleteIcon, { hoverDeleteStyles } from '@/components/Icon/delete';
 import MyTooltip from '@/components/MyTooltip';
 import { QuestionOutlineIcon } from '@chakra-ui/icons';
 import { TrainingModeEnum } from '@/constants/plugin';
-import FileSelect, { type FileItemType } from './FileSelect';
+import FileSelect, { type FileItemType } from './FileSelect'; 
 import { useRouter } from 'next/router';
+import { ContentTypeEnum } from '../Import';
 
-const fileExtension = '.txt, .doc, .docx, .pdf, .md';
 
-const QAImport = ({ kbId }: { kbId: string }) => {
+
+const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTypeEnum }) => {
+  let fileExtension = '.txt, .doc, .docx, .xls, .xlsx, .pdf, .md';
+  if (contentType === ContentTypeEnum.chat) {
+    fileExtension = '.xls, .xlsx';
+  }
   const unitPrice = qaModel.price || 3;
   const chunkLen = qaModel.maxToken * 0.45;
   const theme = useTheme();
@@ -30,7 +35,16 @@ const QAImport = ({ kbId }: { kbId: string }) => {
   const [showRePreview, setShowRePreview] = useState(false);
   const [previewFile, setPreviewFile] = useState<FileItemType>();
   const [successChunks, setSuccessChunks] = useState(0);
-  const [prompt, setPrompt] = useState('');
+
+  const createPrompt = (s?: string) => `我会给你发送一段长文本，${s ? `是关于${s}，` : ''}请学习它，并用 markdown 格式给出 25 个问题和答案，问题可以多样化、自由扩展；答案要详细、解读到位，答案包含普通文本、链接、代码、表格、公示、媒体链接等。`
+  const [topic, setTopic] = useState(``)
+  const [prompt, setPrompt] = useState(createPrompt());
+
+  const handleTopicChange = useCallback((e: any) => {
+      (e.target.value ? setTopic(`"${e.target.value}"`) : '');
+      console.log(createPrompt(e.target.value))
+      setPrompt(createPrompt(topic))
+  }, [topic])
 
   const totalChunk = useMemo(
     () => files.reduce((sum, file) => sum + file.chunks.length, 0),
@@ -138,6 +152,9 @@ const QAImport = ({ kbId }: { kbId: string }) => {
           }}
           chunkLen={chunkLen}
           py={emptyFiles ? '100px' : 5}
+          showUrlFetch={false}
+          showCreateFile={false}
+          contentType={contentType}
         />
 
         {!emptyFiles && (
@@ -159,6 +176,9 @@ const QAImport = ({ kbId }: { kbId: string }) => {
                     bg: 'myBlue.100',
                     '& .delete': {
                       display: 'block'
+                    },
+                    '& .edit': {
+                      display: 'block'
                     }
                   }}
                   onClick={() => setPreviewFile(item)}
@@ -167,6 +187,19 @@ const QAImport = ({ kbId }: { kbId: string }) => {
                   <Box ml={2} flex={'1 0 0'} pr={3} {...filenameStyles}>
                     {item.filename}
                   </Box>
+                  {/* <MyIcon
+                    position={'absolute'}
+                    right={9}
+                    className="edit"
+                    name={'edit'}
+                    w={'16px'}
+                    _hover={{ color: 'blue.600' }}
+                    display={['block', 'none']}
+                    onClick={(e) => {
+                      e.stopPropagation();
+
+                    }}
+                  /> */}
                   <MyIcon
                     position={'absolute'}
                     right={3}
@@ -186,9 +219,9 @@ const QAImport = ({ kbId }: { kbId: string }) => {
             {/* prompt */}
             <Box py={5}>
               <Box mb={2}>
-                QA 拆分引导词{' '}
+                内容主题{' '}
                 <MyTooltip
-                  label={`可输入关于文件内容的范围介绍，例如:\n1. Laf 的介绍\n2. xxx的简历\n最终会补全为: 关于{输入的内容}`}
+                  label={`关于文件内容主题介绍`}
                   forceShow
                 >
                   <QuestionOutlineIcon ml={1} />
@@ -198,10 +231,38 @@ const QAImport = ({ kbId }: { kbId: string }) => {
                 <Box mr={2}>关于</Box>
                 <Input
                   flex={1}
-                  placeholder={'Laf 云函数的介绍'}
+                  placeholder={'某事某物的介绍'}
+                  bg={'myWhite.500'}
+                  defaultValue={topic}
+                  onChange={handleTopicChange}
+                  // onChange={(e) => {
+                  //   (e.target.value ? setTopic(`"${e.target.value}"`) : '');
+                  //   console.log(createPrompt(e.target.value))
+                  //   setPrompt(createPrompt(topic))
+                  // }}
+                />
+              </Flex>
+            </Box>
+            <Box py={5}>
+              <Box mb={2}>
+                提示词{' '}
+                {/* <MyTooltip
+                  label={`可输入关于文件内容的范围介绍`}
+                  forceShow
+                >
+                  <QuestionOutlineIcon ml={1} />
+                </MyTooltip> */}
+              </Box>
+              <Flex alignItems={'center'} fontSize={'sm'}>
+                {/* <Box mr={2}>关于</Box> */}
+                <Textarea
+                  h={200}
+                  resize={'vertical'}
+                  flex={1}
+                  placeholder={'系统提示词'}
                   bg={'myWhite.500'}
                   defaultValue={prompt}
-                  onBlur={(e) => (e.target.value ? setPrompt(`关于"${e.target.value}"`) : '')}
+                  onBlur={(e) => (e.target.value ? setPrompt(`"${e.target.value}"`) : '')}
                 />
               </Flex>
             </Box>
@@ -218,13 +279,22 @@ const QAImport = ({ kbId }: { kbId: string }) => {
               </Box>
               <Box ml={4}>{price}元</Box>
             </Flex>
-            <Flex mt={3}>
+            <Flex mt={3} mb={3}>
               {showRePreview && (
                 <Button variant={'base'} mr={4} onClick={onRePreview}>
                   重新生成预览
                 </Button>
               )}
-              <Button isDisabled={uploading} onClick={openConfirm(onclickUpload)}>
+              <Button isDisabled={uploading} onClick={() => {
+                if (!prompt) {
+                  toast({
+                    status: 'warning',
+                    title: '请输入 QA 拆分引导词'
+                  });
+                  return;
+                }
+                openConfirm(onclickUpload)()
+              }}>
                 {uploading ? (
                   <Box>{Math.round((successChunks / totalChunk) * 100)}%</Box>
                 ) : (
@@ -247,7 +317,7 @@ const QAImport = ({ kbId }: { kbId: string }) => {
               bg={'myWhite.400'}
             >
               <Box px={[4, 8]} fontSize={['lg', 'xl']} fontWeight={'bold'} {...filenameStyles}>
-                {previewFile.filename}
+              {"编辑 - "}{previewFile.filename}
               </Box>
               <CloseIcon
                 position={'absolute'}
@@ -310,6 +380,9 @@ const QAImport = ({ kbId }: { kbId: string }) => {
                       <Flex mb={1} px={4} userSelect={'none'}>
                         <Box px={3} py={'1px'} border={theme.borders.base} borderRadius={'md'}>
                           # {i + 1}
+                        </Box>
+                        <Box ml={2} px={3} py={'1px'} border={theme.borders.base} borderRadius={'md'}>
+                          {chunk.q.length} 个字符
                         </Box>
                         <Box ml={2} fontSize={'sm'} color={'myhGray.500'} {...filenameStyles}>
                           {file.filename}

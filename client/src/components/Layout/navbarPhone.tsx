@@ -12,20 +12,20 @@ const NavbarPhone = ({ unread }: { unread: number }) => {
   const { lastChatAppId, lastChatId } = useChatStore();
   const navbarList = useMemo(
     () => [
-      {
-        label: t('navbar.Chat'),
-        icon: 'chat',
-        link: `/chat?appId=${lastChatAppId}&chatId=${lastChatId}`,
-        activeLink: ['/chat'],
-        unread: 0
-      },
-      {
-        label: t('navbar.Apps'),
-        icon: 'tabbarModel',
-        link: `/app/list`,
-        activeLink: ['/app/list', '/app/detail'],
-        unread: 0
-      },
+    //   {
+    //     label: t('navbar.Chat'),
+    //     icon: 'chat',
+    //     link: `/chat?appId=${lastChatAppId}&chatId=${lastChatId}`,
+    //     activeLink: ['/chat'],
+    //     unread: 0
+    //   },
+    //   {
+    //     label: t('navbar.Apps'),
+    //     icon: 'tabbarModel',
+    //     link: `/app/list`,
+    //     activeLink: ['/app/list', '/app/detail'],
+    //     unread: 0
+    //   },
       {
         label: t('navbar.Tools'),
         icon: 'tabbarMore',

@@ -1,8 +1,10 @@
 import mammoth from 'mammoth';
 import Papa from 'papaparse';
+import * as XLSX from 'xlsx'
 import { getOpenAiEncMap } from './plugin/openai';
 import { getErrText } from './tools';
 import { uploadImg, postUploadFiles } from '@/api/system';
+import { ContentTypeEnum } from '@/pages/kb/detail/components/Import';
 
 /**
  * upload file to mongo gridfs
@@ -24,6 +26,100 @@ export const uploadFiles = (
     percentListen && percentListen(percent);
   });
 };
+
+function encodeCell(r: number, c: number) {
+  return XLSX.utils.encode_cell({ r, c });
+}
+
+function deleteRow(ws: any, index: any) {
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let row = index; row < range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+          ws[encodeCell(row, col)] = ws[encodeCell(row + 1, col)];
+      }
+  }
+  range.e.r--;
+  ws['!ref'] = XLSX.utils.encode_range(range.s, range.e);
+}
+
+function deleteCol(ws: any, index: any) {
+  const range = XLSX.utils.decode_range(ws['!ref']);
+  for (let col = index; col < range.e.c; col++) {
+      for (let row = range.s.r; row <= range.e.r; row++) {
+          ws[encodeCell(row, col)] = ws[encodeCell(row, col + 1)];
+      }
+  }
+  range.e.c--;
+  ws['!ref'] = XLSX.utils.encode_range(range.s, range.e);
+}
+
+/**
+ * 读取 Excel 文件内容
+ */
+export const readExcelContent = (file: File, contentType: ContentTypeEnum) => 
+  new Promise<string>((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+      let workbook: XLSX.WorkBook;
+      let list: any[] = [];
+      let str: string = '';
+      reader.onload = (event) => {
+        if (!event?.target?.result) return reject('解析 Excel 失败');
+        workbook = XLSX.read(event.target.result, {
+          type: "binary"
+        });
+        console.log(workbook)
+        workbook.SheetNames.forEach(name => {
+          const ref = workbook.Sheets[name]["!ref"];
+          if (ref) {
+            str += `${name}\n`;
+            XLSX.utils.sheet_to_json(workbook.Sheets[name]).map((item: any) => {
+              if (ContentTypeEnum.chat && !item.hasOwnProperty.call(item, '会话记录')) {
+                return reject('企点对话内容格式不正确，未包含"会话记录"数据列');
+              }
+              let chatLine = contentType === ContentTypeEnum.chat && item['会话记录']
+                .split('\n')
+                .map((line: string) => {
+                  if (line.indexOf(item['客服']) !== -1) {
+                    line = ' 客服：';
+                  }
+                  if (line.indexOf(item['客户']) !== -1) {
+                    line = ' 玩家：';
+                  }
+                  if (line.indexOf('【此条无需回复】') !== -1) {
+                    line = '【此条无需回复】';
+                  }
+                  return line;
+                })
+                .filter((line: any) => line)
+                .join('')
+                .replaceAll('玩家：[暂不支持该消息格式]', '')
+                .replaceAll('客服：[暂不支持该消息格式]', '')
+                .replaceAll('玩家：[图片]', '')
+                .replaceAll('客服：[图片]', '')
+                .replaceAll('客服：【此条无需回复】', '').trim();
+              Object.entries(item).forEach(([key, value], index) => {
+                if (contentType === ContentTypeEnum.chat) {
+                  if (index !== 8) return
+                  value = chatLine
+                }
+                str += `${key}：${value}；`
+              })
+              str += '\n'
+            })
+          }
+        });
+        resolve(str);
+      };
+      reader.onerror = err => {
+        console.log(err, 'excel load error');
+        reject('读取 Excel 失败');
+      };
+      reader.readAsBinaryString(file);
+    } catch (error) {
+      reject('浏览器不支持文件内容读取');
+    }
+  });
 
 /**
  * 读取 txt 文件内容

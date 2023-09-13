@@ -27,20 +27,20 @@ const Navbar = ({ unread }: { unread: number }) => {
   const { lastChatAppId, lastChatId } = useChatStore();
   const navbarList = useMemo(
     () => [
-      {
-        label: t('navbar.Chat'),
-        icon: 'chat',
-        activeIcon: 'chatFill',
-        link: `/chat?appId=${lastChatAppId}&chatId=${lastChatId}`,
-        activeLink: ['/chat']
-      },
-      {
-        label: t('navbar.Apps'),
-        icon: 'appLight',
-        activeIcon: 'appFill',
-        link: `/app/list`,
-        activeLink: ['/app/list', '/app/detail']
-      },
+    //   {
+    //     label: t('navbar.Chat'),
+    //     icon: 'chat',
+    //     activeIcon: 'chatFill',
+    //     link: `/chat?appId=${lastChatAppId}&chatId=${lastChatId}`,
+    //     activeLink: ['/chat']
+    //   },
+    //   {
+    //     label: t('navbar.Apps'),
+    //     icon: 'appLight',
+    //     activeIcon: 'appFill',
+    //     link: `/app/list`,
+    //     activeLink: ['/app/list', '/app/detail']
+    //   },
       {
         label: t('navbar.Datasets'),
         icon: 'dbLight',
@@ -167,35 +167,7 @@ const Navbar = ({ unread }: { unread: number }) => {
           </Link>
         </Box>
       )}
-      {feConfigs?.show_doc && (
-        <MyTooltip label={t('home.Docs')} placement={'right-end'}>
-          <Box
-            {...itemStyles}
-            mb={0}
-            color={'#9096a5'}
-            onClick={() => {
-              window.open(`https://doc.fastgpt.run/docs/intro`);
-            }}
-          >
-            <MyIcon name={'courseLight'} width={'26px'} height={'26px'} />
-          </Box>
-        </MyTooltip>
-      )}
       <Language {...itemStyles} />
-      {feConfigs?.show_git && (
-        <MyTooltip label={`Git Star: ${gitStar}`} placement={'right-end'}>
-          <Link
-            as={NextLink}
-            href="https://github.com/labring/FastGPT"
-            target={'_blank'}
-            {...itemStyles}
-            mt={0}
-            color={'#9096a5'}
-          >
-            <MyIcon name={'git'} width={'22px'} height={'22px'} />
-          </Link>
-        </MyTooltip>
-      )}
     </Flex>
   );
 };

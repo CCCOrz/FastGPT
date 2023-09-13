@@ -65,5 +65,5 @@ export enum OutLinkTypeEnum {
   'iframe' = 'iframe'
 }
 
-export const HUMAN_ICON = `/icon/human.png`;
+export const HUMAN_ICON = `/icon/bot.png`;
 export const LOGO_ICON = `/icon/logo.svg`;

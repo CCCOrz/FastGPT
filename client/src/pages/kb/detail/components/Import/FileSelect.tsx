@@ -13,19 +13,20 @@ import { Box, Flex, useDisclosure, type BoxProps } from '@chakra-ui/react';
 import { fileImgs } from '@/constants/common';
 import { DragEvent, useCallback, useState } from 'react';
 import { useTranslation } from 'next-i18next';
-import { readTxtContent, readPdfContent, readDocContent } from '@/utils/file';
+import { readTxtContent, readPdfContent, readDocContent, readExcelContent } from '@/utils/file';
 import { customAlphabet } from 'nanoid';
 import dynamic from 'next/dynamic';
 import MyTooltip from '@/components/MyTooltip';
 import { FetchResultItem, DatasetItemType } from '@/types/plugin';
 import { getErrText } from '@/utils/tools';
 import { useDatasetStore } from '@/store/dataset';
+import { ContentTypeEnum } from '../Import'
 
 const UrlFetchModal = dynamic(() => import('./UrlFetchModal'));
 const CreateFileModal = dynamic(() => import('./CreateFileModal'));
 
 const nanoid = customAlphabet('abcdefghijklmnopqrstuvwxyz1234567890', 12);
-const csvTemplate = `question,answer\n"什么是 laf","laf 是一个云函数开发平台……"\n"什么是 sealos","Sealos 是以 kubernetes 为内核的云操作系统发行版,可以……"`;
+const csvTemplate = `question,answer\n"问题1","回答1"\n"问题2","回答2"`;
 
 export type FileItemType = {
   id: string;
@@ -34,6 +35,7 @@ export type FileItemType = {
   text: string;
   icon: string;
   tokens: number;
+  extra?: Array<string>
 };
 interface Props extends BoxProps {
   fileExtension: string;
@@ -43,6 +45,7 @@ interface Props extends BoxProps {
   isCsv?: boolean;
   showUrlFetch?: boolean;
   showCreateFile?: boolean;
+  contentType?: ContentTypeEnum;
 }
 
 const FileSelect = ({
@@ -53,6 +56,7 @@ const FileSelect = ({
   isCsv = false,
   showUrlFetch = true,
   showCreateFile = true,
+  contentType = ContentTypeEnum.normal,
   ...props
 }: Props) => {
   const { kbDetail } = useDatasetStore();
@@ -103,6 +107,9 @@ const FileSelect = ({
                 case 'txt':
                 case 'md':
                   return readTxtContent(file);
+                case 'xls':
+                case 'xlsx':
+                  return readExcelContent(file, contentType);
                 case 'pdf':
                   return readPdfContent(file);
                 case 'doc':
@@ -141,6 +148,12 @@ const FileSelect = ({
                 file_id: filesId[0]
               }))
             };
+            // if (['xls', 'xlsx'].includes(extension)) {
+            //   fileItem.extra = []
+            // }
+            // if (extension && ['xls', 'xlsx'].includes(extension)) {
+            //   fileItem.extra = []
+            // }
             chunkFiles.unshift(fileItem);
             continue;
           }
