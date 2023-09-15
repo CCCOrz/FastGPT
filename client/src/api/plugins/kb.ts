@@ -108,3 +108,9 @@ export const postSplitData = (data: {
 
 export const searchText = (data: SearchTestProps) =>
   POST<SearchTestResponse>(`/openapi/kb/searchTest`, data);
+
+/**
+ * 获取相似问题
+ */
+export const getSimilarQuestions = (data: { q: string, a: string }) =>
+  POST<any>(`/openapi/kb/getSimilarQuestions`, data);

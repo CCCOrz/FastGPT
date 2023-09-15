@@ -182,7 +182,8 @@ export const insertKbItem = ({
       { key: 'file_id', value: item.file_id || '' },
       { key: 'q', value: item.q.replace(/'/g, '"') },
       { key: 'a', value: item.a.replace(/'/g, '"') },
-      { key: 'vector', value: `[${item.vector}]` }
+      { key: 'vector', value: `[${item.vector}]` },
+      { key: 'prompt', value: item.prompt || '' },
     ])
   });
 };
@@ -200,7 +201,8 @@ export async function initPg() {
           source VARCHAR(100),
           file_id VARCHAR(100),
           q TEXT NOT NULL,
-          a TEXT
+          a TEXT,
+          prompt TEXT,
       );
       CREATE INDEX IF NOT EXISTS modelData_userId_index ON ${PgTrainingTableName} USING HASH (user_id);
       CREATE INDEX IF NOT EXISTS modelData_kbId_index ON ${PgTrainingTableName} USING HASH (kb_id);

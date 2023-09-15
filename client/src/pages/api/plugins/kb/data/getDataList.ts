@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     const [searchRes, total] = await Promise.all([
       PgClient.select<KbDataItemType>(PgTrainingTableName, {
-        fields: ['id', 'q', 'a', 'source', 'file_id'],
+        fields: ['id', 'q', 'a', 'source', 'file_id', 'prompt'],
         where,
         order: [{ field: 'id', mode: 'DESC' }],
         limit: pageSize,

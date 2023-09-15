@@ -15,7 +15,7 @@ export type Props = {
   kbId: string;
   data: DatasetItemType[];
   mode: `${TrainingModeEnum}`;
-  prompt?: string;
+  prompt: string;
 };
 
 export type Response = {
@@ -154,6 +154,8 @@ export async function pushDataToKb({
     .filter((item) => item.status === 'fulfilled')
     .map<DatasetItemType>((item: any) => item.value);
 
+
+  console.log("[prompt]", prompt)
   // 插入记录
   const insertRes = await TrainingData.insertMany(
     insertData.map((item) => ({

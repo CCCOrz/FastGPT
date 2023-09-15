@@ -37,6 +37,7 @@ export type DatasetItemType = {
   a: string; // 原文
   source?: string;
   file_id?: string;
+  prompt?: string;
 };
 export type KbDataItemType = DatasetItemType & {
   id: string;

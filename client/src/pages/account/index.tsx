@@ -38,11 +38,11 @@ const Account = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
       id: TabEnum.info
     },
 
-    {
-      icon: 'billRecordLight',
-      label: t('user.Usage Record'),
-      id: TabEnum.bill
-    },
+    // {
+    //   icon: 'billRecordLight',
+    //   label: t('user.Usage Record'),
+    //   id: TabEnum.bill
+    // },
     ...(feConfigs?.show_userDetail
       ? [
           {
@@ -57,11 +57,11 @@ const Account = ({ currentTab }: { currentTab: `${TabEnum}` }) => {
           }
         ]
       : []),
-    {
-      icon: 'informLight',
-      label: t('user.Notice'),
-      id: TabEnum.inform
-    },
+    // {
+    //   icon: 'informLight',
+    //   label: t('user.Notice'),
+    //   id: TabEnum.inform
+    // },
     {
       icon: 'loginoutLight',
       label: t('user.Sign Out'),

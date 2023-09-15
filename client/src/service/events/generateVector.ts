@@ -39,7 +39,8 @@ export async function generateVector(): Promise<any> {
       a: 1,
       source: 1,
       file_id: 1,
-      vectorModel: 1
+      vectorModel: 1,
+      prompt: 1
     });
 
     // task preemption
@@ -76,7 +77,8 @@ export async function generateVector(): Promise<any> {
         a: dataItems[i].a,
         source: data.source,
         file_id: data.file_id,
-        vector
+        vector,
+        prompt: data.prompt
       }))
     });
 

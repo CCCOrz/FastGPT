@@ -166,15 +166,15 @@ const Kb = () => {
             </MenuButton>
           }
           menuList={[
-            {
-              child: (
-                <Flex>
-                  <Image src={FolderAvatarSrc} alt={''} w={'20px'} mr={1} />
-                  {t('Folder')}
-                </Flex>
-              ),
-              onClick: () => setEditFolderData({})
-            },
+            // {
+            //   child: (
+            //     <Flex>
+            //       <Image src={FolderAvatarSrc} alt={''} w={'20px'} mr={1} />
+            //       {t('Folder')}
+            //     </Flex>
+            //   ),
+            //   onClick: () => setEditFolderData({})
+            // },
             {
               child: (
                 <Flex>

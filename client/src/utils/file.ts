@@ -61,7 +61,6 @@ export const readExcelContent = (file: File, contentType: ContentTypeEnum) =>
     try {
       const reader = new FileReader();
       let workbook: XLSX.WorkBook;
-      let list: any[] = [];
       let str: string = '';
       reader.onload = (event) => {
         if (!event?.target?.result) return reject('解析 Excel 失败');
@@ -74,34 +73,36 @@ export const readExcelContent = (file: File, contentType: ContentTypeEnum) =>
           if (ref) {
             str += `${name}\n`;
             XLSX.utils.sheet_to_json(workbook.Sheets[name]).map((item: any) => {
-              if (ContentTypeEnum.chat && !item.hasOwnProperty.call(item, '会话记录')) {
-                return reject('企点对话内容格式不正确，未包含"会话记录"数据列');
+              if (contentType === ContentTypeEnum.chat) {
+                if (!item.hasOwnProperty.call(item, '会话记录')) return reject('企点对话内容格式不正确，未包含"会话记录"数据列');
+                item['会话记录'] = item['会话记录']
+                  .split('\n')
+                  .map((line: string) => {
+                    if (line.indexOf(item['客服']) !== -1) {
+                      line = ' 客服：';
+                    }
+                    if (line.indexOf(item['客户']) !== -1) {
+                      line = ' 玩家：';
+                    }
+                    if (line.indexOf('【此条无需回复】') !== -1) {
+                      line = '【此条无需回复】';
+                    }
+                    return line;
+                  })
+                  .filter((line: any) => line)
+                  .join('')
+                  .replaceAll('玩家：[暂不支持该消息格式]', '')
+                  .replaceAll('客服：[暂不支持该消息格式]', '')
+                  .replaceAll('玩家：[图片]', '')
+                  .replaceAll('客服：[图片]', '')
+                  .replaceAll('客服：【此条无需回复】', '').trim();
               }
-              let chatLine = contentType === ContentTypeEnum.chat && item['会话记录']
-                .split('\n')
-                .map((line: string) => {
-                  if (line.indexOf(item['客服']) !== -1) {
-                    line = ' 客服：';
-                  }
-                  if (line.indexOf(item['客户']) !== -1) {
-                    line = ' 玩家：';
-                  }
-                  if (line.indexOf('【此条无需回复】') !== -1) {
-                    line = '【此条无需回复】';
-                  }
-                  return line;
-                })
-                .filter((line: any) => line)
-                .join('')
-                .replaceAll('玩家：[暂不支持该消息格式]', '')
-                .replaceAll('客服：[暂不支持该消息格式]', '')
-                .replaceAll('玩家：[图片]', '')
-                .replaceAll('客服：[图片]', '')
-                .replaceAll('客服：【此条无需回复】', '').trim();
               Object.entries(item).forEach(([key, value], index) => {
                 if (contentType === ContentTypeEnum.chat) {
-                  if (index !== 8) return
-                  value = chatLine
+                  if (key !== '会话记录') return
+                }
+                if (contentType === ContentTypeEnum.feedback) {
+                  if (!['类型', '内容'].includes(key)) return
                 }
                 str += `${key}：${value}；`
               })

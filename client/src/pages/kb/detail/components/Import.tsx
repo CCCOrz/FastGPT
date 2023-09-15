@@ -25,7 +25,8 @@ enum ImportTypeEnum {
 
 export enum ContentTypeEnum {
   normal = 'normal',
-  chat = 'chat'
+  chat = 'chat',
+  feedback = 'feedback'
 }
 
 const ImportData = ({ kbId }: { kbId: string }) => {
@@ -99,6 +100,12 @@ const ImportData = ({ kbId }: { kbId: string }) => {
                   title: '企点对话',
                   desc: '企点导出的聊天记录，自动筛选对话内容',
                   value: ContentTypeEnum.chat
+                },
+                {
+                  icon: 'uploadFile',
+                  title: '玩家反馈',
+                  desc: '客服后台玩家反馈回复信息',
+                  value: ContentTypeEnum.feedback
                 }
               ]}
               value={contentType}
@@ -116,6 +123,7 @@ const ImportData = ({ kbId }: { kbId: string }) => {
         {importType === ImportTypeEnum.index && <ChunkImport kbId={kbId} />}
         {importType === ImportTypeEnum.qa && contentType === ContentTypeEnum.normal && <QAImport kbId={kbId} contentType={contentType as ContentTypeEnum} />}
         {importType === ImportTypeEnum.qa && contentType === ContentTypeEnum.chat && <QAImport kbId={kbId} contentType={contentType as ContentTypeEnum} />}
+        {importType === ImportTypeEnum.qa && contentType === ContentTypeEnum.feedback && <QAImport kbId={kbId} contentType={contentType as ContentTypeEnum} />}
         {importType === ImportTypeEnum.csv && <CsvImport kbId={kbId} />}
       </Box>
     </Flex>

@@ -142,7 +142,8 @@ export async function generateQA(): Promise<any> {
         file_id: data.file_id
       })),
       userId,
-      mode: TrainingModeEnum.index
+      mode: TrainingModeEnum.index,
+      prompt: data.prompt
     });
 
     // delete data from training

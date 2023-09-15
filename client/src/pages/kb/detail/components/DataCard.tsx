@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef, useMemo } from 'react';
-import { Box, Card, IconButton, Flex, Button, Grid, Image } from '@chakra-ui/react';
+import { Box, Card, IconButton, Flex, Button, Grid, Image, PopoverTrigger, Popover, PopoverContent, PopoverCloseButton, PopoverArrow, PopoverBody } from '@chakra-ui/react';
 import type { KbDataItemType } from '@/types/plugin';
 import { usePagination } from '@/hooks/usePagination';
 import {
@@ -7,9 +7,10 @@ import {
   getExportDataList,
   delOneKbDataByDataId,
   getTrainingData,
-  getFileInfoById
+  getFileInfoById,
+  getSimilarQuestions
 } from '@/api/plugins/kb';
-import { DeleteIcon, RepeatIcon } from '@chakra-ui/icons';
+import { DeleteIcon, QuestionOutlineIcon, RepeatIcon } from '@chakra-ui/icons';
 import { fileDownload } from '@/utils/file';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useToast } from '@/hooks/useToast';
@@ -36,9 +37,11 @@ const DataCard = ({ kbId }: { kbId: string }) => {
   const [searchText, setSearchText] = useState('');
   const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [similarQuestions, setSimilarQuestions] = useState('')
   const { openConfirm, ConfirmModal } = useConfirm({
     content: t('dataset.Confirm to delete the data')
   });
+
 
   const {
     data: kbDataList,
@@ -168,7 +171,18 @@ const DataCard = ({ kbId }: { kbId: string }) => {
         </Box>
       </Flex>
       <Flex my={3} alignItems={'center'}>
-        <Box>
+        <Flex alignItems={'center'}>
+          <Box mr={2} fontSize={['md', 'sm']}>
+            <Popover trigger={'hover'}>
+              <PopoverTrigger>
+                <Button isLoading={isLoadingExport || isLoading} size={['xs', 'sm']}>提示词</Button>
+              </PopoverTrigger>
+              <PopoverContent>
+                <PopoverArrow />
+                <PopoverBody zIndex={9999}>{kbDataList[0]?.prompt || '无'}</PopoverBody>
+              </PopoverContent>
+            </Popover>
+          </Box>
           <Box as={'span'} fontSize={['md', 'lg']}>
             {total}组
           </Box>
@@ -181,7 +195,7 @@ const DataCard = ({ kbId }: { kbId: string }) => {
               </>
             )}
           </Box>
-        </Box>
+        </Flex>
         <Box flex={1} mr={1} />
         <MyInput
           leftIcon={
@@ -218,7 +232,7 @@ const DataCard = ({ kbId }: { kbId: string }) => {
             pt={3}
             userSelect={'none'}
             boxShadow={'none'}
-            _hover={{ boxShadow: 'lg', '& .delete': { display: 'flex' } }}
+            _hover={{ boxShadow: 'lg', '& .delete': { display: 'flex' }, '& .similarBtn': { display: 'block' } }}
             border={'1px solid '}
             borderColor={'myGray.200'}
             onClick={() =>
@@ -228,6 +242,34 @@ const DataCard = ({ kbId }: { kbId: string }) => {
               })
             }
           >
+            <Box 
+              pos="absolute"
+              right="4"
+              top="4">
+              <Popover isLazy>
+                <PopoverTrigger>
+                  <Button
+                    className="similarBtn" 
+                    display={['block', 'none']} 
+                    size={['xs', 'xs']} 
+                    variant='solid'
+                    colorScheme='purple'
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      const data = await getSimilarQuestions({ q: item.q, a: item.a });
+                      console.log("[getSimilarQuestions]", data)
+                      setSimilarQuestions(data)
+                    }}
+                  >
+                    {'相似问题'}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <PopoverArrow />
+                  <PopoverBody zIndex={9999}>{similarQuestions}</PopoverBody>
+                </PopoverContent>
+              </Popover>
+            </Box>
             <Box
               h={'95px'}
               overflow={'hidden'}

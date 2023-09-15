@@ -68,7 +68,8 @@ export default withNextCors(async function handler(req: NextApiRequest, res: Nex
           q,
           a,
           source: data.source,
-          vector: vectors[0]
+          vector: vectors[0],
+          prompt: data.prompt
         }
       ]
     });

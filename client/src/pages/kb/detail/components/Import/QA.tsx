@@ -22,7 +22,7 @@ import { ContentTypeEnum } from '../Import';
 
 const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTypeEnum }) => {
   let fileExtension = '.txt, .doc, .docx, .xls, .xlsx, .pdf, .md';
-  if (contentType === ContentTypeEnum.chat) {
+  if (contentType === ContentTypeEnum.chat || contentType === ContentTypeEnum.feedback) {
     fileExtension = '.xls, .xlsx';
   }
   const unitPrice = qaModel.price || 3;
@@ -36,15 +36,14 @@ const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTyp
   const [previewFile, setPreviewFile] = useState<FileItemType>();
   const [successChunks, setSuccessChunks] = useState(0);
 
-  const createPrompt = (s?: string) => `我会给你发送一段长文本，${s ? `是关于${s}，` : ''}请学习它，并用 markdown 格式给出 25 个问题和答案，问题可以多样化、自由扩展；答案要详细、解读到位，答案包含普通文本、链接、代码、表格、公示、媒体链接等。`
+  const createPrompt = (s?: string) => {
+    if (contentType === ContentTypeEnum.feedback) {
+      return `我会给你发送一段长文本，${s ? `是关于${s}，` : ''}请学习它，并用 markdown 格式给出至少 25 对问题和答案，问题可以多样化、自由扩展；答案全部用“待补充”三个字填充。`
+    }
+    return `我会给你发送一段长文本，${s ? `是关于${s}，` : ''}请学习它，并用 markdown 格式给出至少 25 对问题和答案，问题可以多样化、自由扩展；答案要详细、解读到位，答案包含普通文本、链接、代码、表格、公示、媒体链接等。`
+  }
   const [topic, setTopic] = useState(``)
   const [prompt, setPrompt] = useState(createPrompt());
-
-  const handleTopicChange = useCallback((e: any) => {
-      (e.target.value ? setTopic(`"${e.target.value}"`) : '');
-      console.log(createPrompt(e.target.value))
-      setPrompt(createPrompt(topic))
-  }, [topic])
 
   const totalChunk = useMemo(
     () => files.reduce((sum, file) => sum + file.chunks.length, 0),
@@ -73,7 +72,7 @@ const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTyp
           kbId,
           data: chunks.slice(i, i + step),
           mode: TrainingModeEnum.qa,
-          prompt: prompt || '下面是一段长文本'
+          prompt: `${prompt}`
         });
 
         success += insertLen;
@@ -217,9 +216,9 @@ const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTyp
               ))}
             </Box>
             {/* prompt */}
-            <Box py={5}>
+            {/* <Box py={5}>
               <Box mb={2}>
-                内容主题{' '}
+                主题{' '}
                 <MyTooltip
                   label={`关于文件内容主题介绍`}
                   forceShow
@@ -228,21 +227,18 @@ const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTyp
                 </MyTooltip>
               </Box>
               <Flex alignItems={'center'} fontSize={'sm'}>
-                <Box mr={2}>关于</Box>
                 <Input
                   flex={1}
                   placeholder={'某事某物的介绍'}
                   bg={'myWhite.500'}
-                  defaultValue={topic}
-                  onChange={handleTopicChange}
-                  // onChange={(e) => {
-                  //   (e.target.value ? setTopic(`"${e.target.value}"`) : '');
-                  //   console.log(createPrompt(e.target.value))
-                  //   setPrompt(createPrompt(topic))
-                  // }}
+                  value={topic}
+                  onChange={(e) => {
+                    setTopic(e.target.value)
+                    setPrompt(createPrompt(e.target.value))
+                  }}
                 />
               </Flex>
-            </Box>
+            </Box> */}
             <Box py={5}>
               <Box mb={2}>
                 提示词{' '}
@@ -261,8 +257,8 @@ const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTyp
                   flex={1}
                   placeholder={'系统提示词'}
                   bg={'myWhite.500'}
-                  defaultValue={prompt}
-                  onBlur={(e) => (e.target.value ? setPrompt(`"${e.target.value}"`) : '')}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
                 />
               </Flex>
             </Box>
@@ -289,7 +285,7 @@ const QAImport = ({ kbId, contentType }: { kbId: string, contentType: ContentTyp
                 if (!prompt) {
                   toast({
                     status: 'warning',
-                    title: '请输入 QA 拆分引导词'
+                    title: '系统提示词不可为空'
                   });
                   return;
                 }
